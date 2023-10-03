@@ -23,11 +23,14 @@ ThreadPool::~ThreadPool()
 {
     isPoolRunning_ = false;
     
-    notEmpty_.notify_all();  // 唤醒 threadFunc 中的线程, 它们可能在阻塞或者运行
+    // notEmpty_.notify_all();  // 唤醒 threadFunc 中的线程, 它们可能在阻塞或者运行
 
     // 等待线程池中所有的线程返回
     // 线程有两种状态：阻塞 和 执行任务中
     std::unique_lock<std::mutex> lock(taskQueMtx_);
+
+    notEmpty_.notify_all();  // 唤醒 threadFunc 中的线程, 它们可能在阻塞或者运行
+
     exitCond_.wait(lock, [&]()->bool {return threads_.size() == 0;});  // 等待线程队列中所有线程先析构
 }
 
@@ -147,7 +150,7 @@ void ThreadPool::threadFunc(size_t threadId)
 
             std::cout << "tid: " << std::this_thread::get_id() << "尝试获取任务..." << std::endl;
             
-            while (taskQue_.size() == 0)
+            while (!isPoolRunning_ && taskQue_.size() == 0)
             {
                 // cached 模式下，可能创建了很多线程，当它们的空闲时间超过 60s 就回收
                 if (poolMode_ == PoolMode::MODE_CACHED)
@@ -176,15 +179,10 @@ void ThreadPool::threadFunc(size_t threadId)
                     // 等待 notEmpty_ 条件
                     notEmpty_.wait(lock);
                 }
-
-                // 线程池结束，回收线程资源
-                if (!isPoolRunning_)
-                {
-                    threads_.erase(threadId);
-                    exitCond_.notify_all();
-                    std::cout << "thread Id: " << std::this_thread::get_id() << "  >>> exit!" << std::endl; 
-                    return ;
-                }
+            }
+            if (!isPoolRunning_)  // 如果是线程池要析构
+            {
+                break;
             }
             
             idleThreadSize_--;  // 空闲线程数量 -1

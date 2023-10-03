@@ -4,6 +4,7 @@
 
 # ignore vscode files
 .vscode/
+.deadlock_test
 
 # Build results
 [Dd]ebug/
