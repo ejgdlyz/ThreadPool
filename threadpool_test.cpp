@@ -25,11 +25,10 @@ public:
     {}
     ~MyTask()
     {}
-    // run 的返回值如何设计能够接收任意的类型
     Any run()
     {
         std::cout << "tid: " << std::this_thread::get_id() << " begin!" << std::endl;
-        // std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(3));
         ULong sum = 0;
         for (ULong i = begin_; i <= end_; i++)
         {
@@ -48,15 +47,25 @@ int main()
 {
     
     ThreadPool pool;
+    pool.setMode(PoolMode::MODE_CACHED);  // 设置线程池模式
     pool.start(4);  // 默认启动 4 个线程，每个线程创建后都会执行 threadFunc 这个函数
     
     Result res1 = pool.submitTask(std::make_shared<MyTask>(1, 100000000));
     Result res2 = pool.submitTask(std::make_shared<MyTask>(100000001, 200000000));
     Result res3 = pool.submitTask(std::make_shared<MyTask>(200000001, 300000000));
+    Result res4 = pool.submitTask(std::make_shared<MyTask>(200000001, 300000000));
+
+    Result res5 = pool.submitTask(std::make_shared<MyTask>(200000001, 300000000));
+    Result res6 = pool.submitTask(std::make_shared<MyTask>(200000001, 300000000));
 
     ULong  sum1 = res1.get().cast_<ULong>(); 
     ULong  sum2 = res2.get().cast_<ULong>(); 
     ULong  sum3 = res3.get().cast_<ULong>(); 
+    ULong  sum4 = res4.get().cast_<ULong>(); 
+
+    ULong  sum5 = res5.get().cast_<ULong>(); 
+    ULong  sum6 = res6.get().cast_<ULong>(); 
+
 
     // Master - SLave 模型
     // Master 线程用来分解任务，然后给各个 Slave 线程分配任务
