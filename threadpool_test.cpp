@@ -45,35 +45,49 @@ private:
 
 int main()
 {
-    
-    ThreadPool pool;
-    pool.setMode(PoolMode::MODE_CACHED);  // 设置线程池模式
-    pool.start(4);  // 默认启动 4 个线程，每个线程创建后都会执行 threadFunc 这个函数
-    
-    Result res1 = pool.submitTask(std::make_shared<MyTask>(1, 100000000));
-    Result res2 = pool.submitTask(std::make_shared<MyTask>(100000001, 200000000));
-    Result res3 = pool.submitTask(std::make_shared<MyTask>(200000001, 300000000));
-    Result res4 = pool.submitTask(std::make_shared<MyTask>(200000001, 300000000));
+    {
 
-    Result res5 = pool.submitTask(std::make_shared<MyTask>(200000001, 300000000));
-    Result res6 = pool.submitTask(std::make_shared<MyTask>(200000001, 300000000));
+        ThreadPool pool;
+        pool.start(4);  
+        Result res1 = pool.submitTask(std::make_shared<MyTask>(1, 100000000));
+        ULong  sum1 = res1.get().cast_<ULong>(); 
+        
+        cout << sum1 << endl;
+    }
+    cout << "main over!" << endl;
 
-    ULong  sum1 = res1.get().cast_<ULong>(); 
-    ULong  sum2 = res2.get().cast_<ULong>(); 
-    ULong  sum3 = res3.get().cast_<ULong>(); 
-    ULong  sum4 = res4.get().cast_<ULong>(); 
+#if 0
+    {
+        ThreadPool pool;
+        pool.setMode(PoolMode::MODE_CACHED);  // 设置线程池模式
+        pool.start(4);  // 默认启动 4 个线程，每个线程创建后都会执行 threadFunc 这个函数
+        
+        Result res1 = pool.submitTask(std::make_shared<MyTask>(1, 100000000));
+        Result res2 = pool.submitTask(std::make_shared<MyTask>(100000001, 200000000));
+        Result res3 = pool.submitTask(std::make_shared<MyTask>(200000001, 300000000));
+        Result res4 = pool.submitTask(std::make_shared<MyTask>(200000001, 300000000));
 
-    ULong  sum5 = res5.get().cast_<ULong>(); 
-    ULong  sum6 = res6.get().cast_<ULong>(); 
+        Result res5 = pool.submitTask(std::make_shared<MyTask>(200000001, 300000000));
+        Result res6 = pool.submitTask(std::make_shared<MyTask>(200000001, 300000000));
+
+        ULong  sum1 = res1.get().cast_<ULong>(); 
+        ULong  sum2 = res2.get().cast_<ULong>(); 
+        ULong  sum3 = res3.get().cast_<ULong>(); 
+        ULong  sum4 = res4.get().cast_<ULong>(); 
+
+        ULong  sum5 = res5.get().cast_<ULong>(); 
+        ULong  sum6 = res6.get().cast_<ULong>(); 
 
 
-    // Master - SLave 模型
-    // Master 线程用来分解任务，然后给各个 Slave 线程分配任务
-    // 等待各个 Slave 线程执行完任务，返回结果
-    // Master 线程合并各个任务结果，输出 
-    cout << (sum1 + sum2 + sum3) << endl;
+        // Master - SLave 模型
+        // Master 线程用来分解任务，然后给各个 Slave 线程分配任务
+        // 等待各个 Slave 线程执行完任务，返回结果
+        // Master 线程合并各个任务结果，输出 
+        cout << (sum1 + sum2 + sum3) << endl;
+    }
     
     getchar();
+#endif
 
     return 0;
 }
